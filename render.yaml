@@ -7,7 +7,7 @@ services:
     startCommand: python wake_bot.py
     envVars:
       - key: BOT_TOKEN
-        value: 8313504508:AAG0SFdohCyrtWTvacjPZqECVZH1bbd4a5g
+        value: 8313500508:AAG0SFdohCyrtWTvacjPZqECVZH1bbd4a5g
       - key: ALLOWED_USERS
         value: 702965644
       - key: MAC_ADDRESS
