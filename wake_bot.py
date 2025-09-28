@@ -2,7 +2,7 @@ import os
 import socket
 import logging
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, ContextTypes
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,47 +32,45 @@ class WakeBot:
             print(f"Error: {e}")
             return False
 
-    def start(self, update, context):
+    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("Access denied")
+            await update.message.reply_text("Access denied")
             return
-        update.message.reply_text("Bot is ready. Commands: /wake /status /help")
+        await update.message.reply_text("Bot is ready. Commands: /wake /status /help")
 
-    def wake(self, update, context):
+    async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("Access denied")
+            await update.message.reply_text("Access denied")
             return
-        update.message.reply_text("Sending WoL packet...")
+        await update.message.reply_text("Sending WoL packet...")
         if self.wake_pc():
-            update.message.reply_text("WoL packet sent! Computer should start in 1-2 minutes.")
+            await update.message.reply_text("WoL packet sent! Computer should start in 1-2 minutes.")
         else:
-            update.message.reply_text("Error sending WoL")
+            await update.message.reply_text("Error sending WoL")
 
-    def status(self, update, context):
+    async def status(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("Access denied")
+            await update.message.reply_text("Access denied")
             return
-        update.message.reply_text(f"Bot status: Active\nMAC: {self.mac}")
+        await update.message.reply_text(f"Bot status: Active\nMAC: {self.mac}")
 
-    def help(self, update, context):
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("Access denied")
+            await update.message.reply_text("Access denied")
             return
-        update.message.reply_text("Commands: /wake - wake PC, /status - bot status, /help - help")
+        await update.message.reply_text("Commands: /wake - wake PC, /status - bot status, /help - help")
 
     def run(self):
-        updater = Updater(self.token)
-        dispatcher = updater.dispatcher
-        dispatcher.add_handler(CommandHandler("start", self.start))
-        dispatcher.add_handler(CommandHandler("wake", self.wake))
-        dispatcher.add_handler(CommandHandler("status", self.status))
-        dispatcher.add_handler(CommandHandler("help", self.help))
-        updater.start_polling()
-        updater.idle()
+        application = Application.builder().token(self.token).build()
+        application.add_handler(CommandHandler("start", self.start))
+        application.add_handler(CommandHandler("wake", self.wake))
+        application.add_handler(CommandHandler("status", self.status))
+        application.add_handler(CommandHandler("help", self.help))
+        application.run_polling()
 
 if __name__ == "__main__":
     bot = WakeBot()
