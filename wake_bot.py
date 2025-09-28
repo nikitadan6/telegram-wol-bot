@@ -5,7 +5,7 @@ import logging
 import os
 from dotenv import load_dotenv
 
-print("🤖 Запуск бота в облаке Heroku...")
+print("🤖 Запуск бота в облаке Render...")
 
 load_dotenv()
 
@@ -16,7 +16,7 @@ logging.basicConfig(
 
 class WakeBot:
     def __init__(self):
-        self.token = os.getenv('BOT_TOKEN', '8313504508:AAG0SFdohCyrtWTvacjPZqECVZH1bbd4a5g')
+        self.token = os.getenv('BOT_TOKEN', '8313500508:AAG0SFdohCyrtWTvacjPZqECVZH1bbd4a5g')
         self.allowed_users = [int(x) for x in os.getenv('ALLOWED_USERS', '702965644').split(',')]
         self.mac = os.getenv('MAC_ADDRESS', '74-56-3C-AA-E7-9B')
         print("✅ Бот инициализирован в облаке")
@@ -55,7 +55,7 @@ class WakeBot:
             "/wake - Включить компьютер через WoL\n"
             "/status - Проверить статус бота\n"
             "/help - Помощь\n\n"
-            "📍 Бот работает в облаке Heroku"
+            "📍 Бот работает в облаке Render"
         )
 
     async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,7 +81,7 @@ class WakeBot:
             
         await update.message.reply_text(
             f"🤖 Статус облачного бота:\n"
-            f"✅ Активен в Heroku\n"
+            f"✅ Активен в Render\n"
             f"👤 Разрешенные пользователи: {len(self.allowed_users)}\n"
             f"📡 MAC адрес: {self.mac}\n"
             f"🌐 Режим: Облачный"
@@ -116,7 +116,7 @@ class WakeBot:
             application.add_handler(CommandHandler("help", self.help))
             
             print("✅ Бот запущен в облаке и ожидает сообщений...")
-            print("⏹️ Для остановки используйте панель Heroku")
+            print("⏹️ Для остановки используйте панель Render")
             
             application.run_polling()
             
