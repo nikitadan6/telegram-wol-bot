@@ -51,12 +51,11 @@ class WakeBot:
             return
             
         await update.message.reply_text(
-            "🤖 Бот управления компьютером (Облачная версия)\n\n"
+            "🤖 Бот управления компьютером\n\n"
             "Команды:\n"
             "/wake - Включить компьютер через WoL\n"
             "/status - Проверить статус бота\n"
-            "/help - Помощь\n\n"
-            "📍 Бот работает в облаке Render"
+            "/help - Помощь"
         )
 
     async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,11 +80,10 @@ class WakeBot:
             return
             
         await update.message.reply_text(
-            f"🤖 Статус облачного бота:\n"
-            f"✅ Активен в Render\n"
-            f"👤 Разрешенные пользователи: {len(self.allowed_users)}\n"
-            f"📡 MAC адрес: {self.mac}\n"
-            f"🌐 Режим: Облачный"
+            f"🤖 Статус бота:\n"
+            f"✅ Активен\n"
+            f"👤 Пользователи: {len(self.allowed_users)}\n"
+            f"📡 MAC: {self.mac}"
         )
 
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -95,20 +93,15 @@ class WakeBot:
             return
             
         await update.message.reply_text(
-            "📖 Помощь (Облачная версия):\n\n"
-            "/wake - Включить компьютер через Wake-on-LAN\n"
-            "/status - Статус облачного бота\n"
-            "/help - Эта справка\n\n"
-            "⚡ Для работы /wake:\n"
-            "• Компьютер должен быть в розетке\n"
-            "• Сетевой кабель подключен\n"
-            "• WoL включен в BIOS/UEFI\n"
-            "• Порт 9 открыт в роутере"
+            "📖 Помощь:\n\n"
+            "/wake - Включить компьютер\n"
+            "/status - Статус бота\n"
+            "/help - Справка"
         )
 
     def run(self):
         try:
-            print("🔄 Создание приложения в облаке...")
+            print("🔄 Создание приложения...")
             application = Application.builder().token(self.token).build()
             
             application.add_handler(CommandHandler("start", self.start))
@@ -116,32 +109,13 @@ class WakeBot:
             application.add_handler(CommandHandler("status", self.status))
             application.add_handler(CommandHandler("help", self.help))
             
-            print("✅ Бот запущен в облаке и ожидает сообщений...")
-            print("⏹️ Для остановки используйте панель Render")
+            print("✅ Бот запущен и ожидает сообщений...")
             
             application.run_polling()
             
         except Exception as e:
-            print(f"💥 Критическая ошибка в облаке: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"💥 Ошибка: {e}")
 
 if __name__ == "__main__":
     bot = WakeBot()
     bot.run()
-Шаг 3: Укажите совместимую версию Python в runtime.txt
-text
-python-3.11.4
-📝 Обновите файлы через PowerShell:
-powershell
-cd "C:\Users\nikit\OneDrive\Рабочий стол\tg bot"
-
-echo "python-telegram-bot[job-queue]==20.8
-python-dotenv==1.0.0" > requirements.txt
-
-echo "python-3.11.4" > runtime.txt
-
-
-git add .
-git commit -m "Исправление для Python 3.11 и python-telegram-bot 20.8"
-git push origin main
