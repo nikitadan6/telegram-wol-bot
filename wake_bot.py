@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Updater, CommandHandler, CallbackContext
 import socket
 import logging
 import os
@@ -41,15 +41,15 @@ class WakeBot:
             print(f"❌ Ошибка отправки WoL: {e}")
             return False
 
-    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    def start(self, update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         print(f"👤 Команда /start от пользователя {user_id}")
         
         if user_id not in self.allowed_users:
-            await update.message.reply_text("❌ Доступ запрещен")
+            update.message.reply_text("❌ Доступ запрещен")
             return
             
-        await update.message.reply_text(
+        update.message.reply_text(
             "🤖 Бот управления компьютером (Облачная версия)\n\n"
             "Команды:\n"
             "/wake - Включить компьютер через WoL\n"
@@ -58,28 +58,28 @@ class WakeBot:
             "📍 Бот работает в облаке Render"
         )
 
-    async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    def wake(self, update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         print(f"👤 Команда /wake от пользователя {user_id}")
         
         if user_id not in self.allowed_users:
-            await update.message.reply_text("❌ Доступ запрещен")
+            update.message.reply_text("❌ Доступ запрещен")
             return
             
-        await update.message.reply_text("🖥️ Отправляю команду Wake-on-LAN...")
+        update.message.reply_text("🖥️ Отправляю команду Wake-on-LAN...")
         
         if self.wake_pc():
-            await update.message.reply_text("✅ Команда WoL отправлена! Компьютер должен включиться через 1-2 минуты.")
+            update.message.reply_text("✅ Команда WoL отправлена! Компьютер должен включиться через 1-2 минуты.")
         else:
-            await update.message.reply_text("❌ Ошибка отправки команды WoL")
+            update.message.reply_text("❌ Ошибка отправки команды WoL")
 
-    async def status(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    def status(self, update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            await update.message.reply_text("❌ Доступ запрещен")
+            update.message.reply_text("❌ Доступ запрещен")
             return
             
-        await update.message.reply_text(
+        update.message.reply_text(
             f"🤖 Статус облачного бота:\n"
             f"✅ Активен в Render\n"
             f"👤 Разрешенные пользователи: {len(self.allowed_users)}\n"
@@ -87,13 +87,13 @@ class WakeBot:
             f"🌐 Режим: Облачный"
         )
 
-    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    def help(self, update: Update, context: CallbackContext):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            await update.message.reply_text("❌ Доступ запрещен")
+            update.message.reply_text("❌ Доступ запрещен")
             return
             
-        await update.message.reply_text(
+        update.message.reply_text(
             "📖 Помощь (Облачная версия):\n\n"
             "/wake - Включить компьютер через Wake-on-LAN\n"
             "/status - Статус облачного бота\n"
@@ -108,17 +108,19 @@ class WakeBot:
     def run(self):
         try:
             print("🔄 Создание приложения в облаке...")
-            application = Application.builder().token(self.token).build()
+            self.updater = Updater(self.token, use_context=True)
+            dispatcher = self.updater.dispatcher
             
-            application.add_handler(CommandHandler("start", self.start))
-            application.add_handler(CommandHandler("wake", self.wake))
-            application.add_handler(CommandHandler("status", self.status))
-            application.add_handler(CommandHandler("help", self.help))
+            dispatcher.add_handler(CommandHandler("start", self.start))
+            dispatcher.add_handler(CommandHandler("wake", self.wake))
+            dispatcher.add_handler(CommandHandler("status", self.status))
+            dispatcher.add_handler(CommandHandler("help", self.help))
             
             print("✅ Бот запущен в облаке и ожидает сообщений...")
             print("⏹️ Для остановки используйте панель Render")
             
-            application.run_polling()
+            self.updater.start_polling()
+            self.updater.idle()
             
         except Exception as e:
             print(f"💥 Критическая ошибка в облаке: {e}")
