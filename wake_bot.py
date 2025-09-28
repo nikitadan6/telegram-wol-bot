@@ -32,14 +32,14 @@ class WakeBot:
             print(f"Error: {e}")
             return False
 
-    def start(self, update: Update, context: CallbackContext):
+    def start(self, update, context):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             update.message.reply_text("Access denied")
             return
         update.message.reply_text("Bot is ready. Commands: /wake /status /help")
 
-    def wake(self, update: Update, context: CallbackContext):
+    def wake(self, update, context):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             update.message.reply_text("Access denied")
@@ -50,14 +50,14 @@ class WakeBot:
         else:
             update.message.reply_text("Error sending WoL")
 
-    def status(self, update: Update, context: CallbackContext):
+    def status(self, update, context):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             update.message.reply_text("Access denied")
             return
         update.message.reply_text(f"Bot status: Active\nMAC: {self.mac}")
 
-    def help(self, update: Update, context: CallbackContext):
+    def help(self, update, context):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             update.message.reply_text("Access denied")
@@ -65,7 +65,7 @@ class WakeBot:
         update.message.reply_text("Commands: /wake - wake PC, /status - bot status, /help - help")
 
     def run(self):
-        updater = Updater(self.token, use_context=True)
+        updater = Updater(self.token)
         dispatcher = updater.dispatcher
         dispatcher.add_handler(CommandHandler("start", self.start))
         dispatcher.add_handler(CommandHandler("wake", self.wake))
