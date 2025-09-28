@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: telegram-wol-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python wake_bot.py
+    envVars:
+      - key: BOT_TOKEN
+        value: 8313504508:AAG0SFdohCyrtWTvacjPZqECVZH1bbd4a5g
+      - key: ALLOWED_USERS
+        value: 702965644
+      - key: MAC_ADDRESS
+        value: 74-56-3C-AA-E7-9B
