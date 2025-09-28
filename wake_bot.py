@@ -1,8 +1,6 @@
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+import os
 import socket
 import logging
-import os
 from dotenv import load_dotenv
 
 print("🤖 Запуск бота в облаке Render...")
@@ -13,6 +11,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 class WakeBot:
     def __init__(self):
@@ -41,15 +42,15 @@ class WakeBot:
             print(f"❌ Ошибка отправки WoL: {e}")
             return False
 
-    def start(self, update: Update, context: CallbackContext):
+    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         print(f"👤 Команда /start от пользователя {user_id}")
         
         if user_id not in self.allowed_users:
-            update.message.reply_text("❌ Доступ запрещен")
+            await update.message.reply_text("❌ Доступ запрещен")
             return
             
-        update.message.reply_text(
+        await update.message.reply_text(
             "🤖 Бот управления компьютером (Облачная версия)\n\n"
             "Команды:\n"
             "/wake - Включить компьютер через WoL\n"
@@ -58,28 +59,28 @@ class WakeBot:
             "📍 Бот работает в облаке Render"
         )
 
-    def wake(self, update: Update, context: CallbackContext):
+    async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         print(f"👤 Команда /wake от пользователя {user_id}")
         
         if user_id not in self.allowed_users:
-            update.message.reply_text("❌ Доступ запрещен")
+            await update.message.reply_text("❌ Доступ запрещен")
             return
             
-        update.message.reply_text("🖥️ Отправляю команду Wake-on-LAN...")
+        await update.message.reply_text("🖥️ Отправляю команду Wake-on-LAN...")
         
         if self.wake_pc():
-            update.message.reply_text("✅ Команда WoL отправлена! Компьютер должен включиться через 1-2 минуты.")
+            await update.message.reply_text("✅ Команда WoL отправлена! Компьютер должен включиться через 1-2 минуты.")
         else:
-            update.message.reply_text("❌ Ошибка отправки команды WoL")
+            await update.message.reply_text("❌ Ошибка отправки команды WoL")
 
-    def status(self, update: Update, context: CallbackContext):
+    async def status(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("❌ Доступ запрещен")
+            await update.message.reply_text("❌ Доступ запрещен")
             return
             
-        update.message.reply_text(
+        await update.message.reply_text(
             f"🤖 Статус облачного бота:\n"
             f"✅ Активен в Render\n"
             f"👤 Разрешенные пользователи: {len(self.allowed_users)}\n"
@@ -87,13 +88,13 @@ class WakeBot:
             f"🌐 Режим: Облачный"
         )
 
-    def help(self, update: Update, context: CallbackContext):
+    async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
-            update.message.reply_text("❌ Доступ запрещен")
+            await update.message.reply_text("❌ Доступ запрещен")
             return
             
-        update.message.reply_text(
+        await update.message.reply_text(
             "📖 Помощь (Облачная версия):\n\n"
             "/wake - Включить компьютер через Wake-on-LAN\n"
             "/status - Статус облачного бота\n"
@@ -108,23 +109,39 @@ class WakeBot:
     def run(self):
         try:
             print("🔄 Создание приложения в облаке...")
-            self.updater = Updater(self.token, use_context=True)
-            dispatcher = self.updater.dispatcher
+            application = Application.builder().token(self.token).build()
             
-            dispatcher.add_handler(CommandHandler("start", self.start))
-            dispatcher.add_handler(CommandHandler("wake", self.wake))
-            dispatcher.add_handler(CommandHandler("status", self.status))
-            dispatcher.add_handler(CommandHandler("help", self.help))
+            application.add_handler(CommandHandler("start", self.start))
+            application.add_handler(CommandHandler("wake", self.wake))
+            application.add_handler(CommandHandler("status", self.status))
+            application.add_handler(CommandHandler("help", self.help))
             
             print("✅ Бот запущен в облаке и ожидает сообщений...")
             print("⏹️ Для остановки используйте панель Render")
             
-            self.updater.start_polling()
-            self.updater.idle()
+            application.run_polling()
             
         except Exception as e:
             print(f"💥 Критическая ошибка в облаке: {e}")
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
     bot = WakeBot()
     bot.run()
+Шаг 3: Укажите совместимую версию Python в runtime.txt
+text
+python-3.11.4
+📝 Обновите файлы через PowerShell:
+powershell
+cd "C:\Users\nikit\OneDrive\Рабочий стол\tg bot"
+
+echo "python-telegram-bot[job-queue]==20.8
+python-dotenv==1.0.0" > requirements.txt
+
+echo "python-3.11.4" > runtime.txt
+
+
+git add .
+git commit -m "Исправление для Python 3.11 и python-telegram-bot 20.8"
+git push origin main
