@@ -1,6 +1,8 @@
 import os
 import socket
 import logging
+import subprocess
+import platform
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from dotenv import load_dotenv
@@ -32,12 +34,44 @@ class WakeBot:
             print(f"Error: {e}")
             return False
 
+    def check_pc_status(self):
+        """Проверка статуса компьютера через ping"""
+        try:
+            target_ip = "192.168.31.195"
+            
+            param = "-n" if platform.system().lower() == "windows" else "-c"
+            command = ["ping", param, "1", target_ip]
+            
+            result = subprocess.run(command, capture_output=True, text=True)
+            return result.returncode == 0
+        except Exception as e:
+            print(f"Status check error: {e}")
+            return False
+
+    def shutdown_pc(self):
+        """Выключение компьютера"""
+        try:
+            if platform.system().lower() == "windows":
+                subprocess.run(["shutdown", "/s", "/t", "60"])
+                return True, "Computer will shutdown in 60 seconds"
+            else:
+                subprocess.run(["shutdown", "-h", "+1"])
+                return True, "Computer will shutdown in 1 minute"
+        except Exception as e:
+            return False, f"Error: {e}"
+
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             await update.message.reply_text("Access denied")
             return
-        await update.message.reply_text("Bot is ready. Commands: /wake /status /help")
+        await update.message.reply_text(
+            "Bot is ready. Commands:\n"
+            "/wake - Wake up PC\n"
+            "/status - Check PC status\n" 
+            "/shutdown - Shutdown PC\n"
+            "/help - Help"
+        )
 
     async def wake(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
@@ -55,20 +89,47 @@ class WakeBot:
         if user_id not in self.allowed_users:
             await update.message.reply_text("Access denied")
             return
-        await update.message.reply_text(f"Bot status: Active\nMAC: {self.mac}")
+        
+        await update.message.reply_text("Checking PC status...")
+        
+        if self.check_pc_status():
+            await update.message.reply_text("🟢 PC is ONLINE")
+        else:
+            await update.message.reply_text("🔴 PC is OFFLINE")
+
+    async def shutdown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = update.effective_user.id
+        if user_id not in self.allowed_users:
+            await update.message.reply_text("Access denied")
+            return
+        
+        await update.message.reply_text("Initiating shutdown...")
+        success, message = self.shutdown_pc()
+        
+        if success:
+            await update.message.reply_text(f"✅ {message}")
+        else:
+            await update.message.reply_text(f"❌ {message}")
 
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.effective_user.id
         if user_id not in self.allowed_users:
             await update.message.reply_text("Access denied")
             return
-        await update.message.reply_text("Commands: /wake - wake PC, /status - bot status, /help - help")
+        await update.message.reply_text(
+            "Commands:\n"
+            "/wake - Wake up PC using Wake-on-LAN\n"
+            "/status - Check if PC is online\n"
+            "/shutdown - Shutdown PC\n" 
+            "/help - Show this help"
+        )
 
     def run(self):
         application = Application.builder().token(self.token).build()
         application.add_handler(CommandHandler("start", self.start))
         application.add_handler(CommandHandler("wake", self.wake))
         application.add_handler(CommandHandler("status", self.status))
+        application.add_handler(CommandHandler("shutdown", self.shutdown))
         application.add_handler(CommandHandler("help", self.help))
         application.run_polling()
 
